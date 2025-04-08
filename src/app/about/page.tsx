@@ -1,3 +1,5 @@
+//src\app\about\page.tsx
+
 import Navbar from "@/components/navbar"
 
 export default function About() {

@@ -1,3 +1,4 @@
+//src\components\navbar.tsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -6,7 +7,7 @@ import { getCookie } from "cookies-next"
 
 export default function Navbar() {
   const [entryCountry, setEntryCountry] = useState<string | null>(null)
-  const [currentPort, setCurrentPort] = useState<string | null>(null)
+  const [currentSubdomain, setCurrentSubdomain] = useState<string | null>(null)
 
   useEffect(() => {
     // Obtener el país de entrada desde la cookie
@@ -15,9 +16,11 @@ export default function Navbar() {
       setEntryCountry(storedCountry.toString())
     }
 
-    // Obtener el puerto actual
+    // Obtener el subdominio actual
     if (typeof window !== "undefined") {
-      setCurrentPort(window.location.port)
+      const host = window.location.host;
+      const subdomainMatch = host.match(/^([^.]+)\.localhost/);
+      setCurrentSubdomain(subdomainMatch ? subdomainMatch[1] : null);
     }
   }, [])
 
@@ -45,15 +48,19 @@ export default function Navbar() {
     }
   }
 
-  // Generar enlaces a otros "países" (puertos)
+  // Generar enlaces a otros "países" (ahora subdominios)
   const countryLinks = [
-    { port: "3000", country: "Argentina", flag: "🇦🇷" },
-    { port: "3001", country: "Chile", flag: "🇨🇱" },
-    { port: "3002", country: "Paraguay", flag: "🇵🇾" },
-    { port: "3003", country: "Colombia", flag: "🇨🇴" },
-    { port: "3004", country: "Ecuador", flag: "🇪🇨" },
-    { port: "3005", country: "Panamá", flag: "🇵🇦" },
+    { subdomain: "arg", country: "Argentina", flag: "🇦🇷" },
+    { subdomain: "chi", country: "Chile", flag: "🇨🇱" },
+    { subdomain: "par", country: "Paraguay", flag: "🇵🇾" },
+    { subdomain: "col", country: "Colombia", flag: "🇨🇴" },
+    { subdomain: "ecu", country: "Ecuador", flag: "🇪🇨" },
+    { subdomain: "pan", country: "Panamá", flag: "🇵🇦" },
   ]
+
+  // Obtener el puerto actual para mantenerlo en los enlaces
+  const currentPort = typeof window !== "undefined" ? window.location.port : "3000";
+  const portSection = currentPort ? `:${currentPort}` : "";
 
   return (
     <div>
@@ -80,23 +87,25 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Información sobre el puerto actual */}
+      {/* Información sobre el subdominio actual */}
       <div className="bg-gray-100 p-4 text-black">
         <div className="container mx-auto">
-          <h3 className="text-lg font-medium mb-2">Estás navegando desde el puerto: {currentPort}</h3>
+          <h3 className="text-lg font-medium mb-2">
+            Estás navegando desde: {currentSubdomain ? `${currentSubdomain}.localhost${portSection}` : `localhost${portSection}`}
+          </h3>
           <p className="mb-4">
-            Cada puerto representa un país diferente. Prueba acceder a la aplicación desde estos puertos:
+            Cada subdominio representa un país diferente. Prueba acceder a la aplicación desde estos subdominios:
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {countryLinks.map((link) => (
-              <a
-                key={link.port}
-                href={`http://localhost:${link.port}`}
+              <Link
+                key={link.subdomain}
+                href={`http://${link.subdomain}.localhost${portSection}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`px-3 py-2 rounded flex items-center justify-between ${
-                  currentPort === link.port
+                  currentSubdomain === link.subdomain
                     ? "bg-green-100 border border-green-300"
                     : "bg-white border hover:bg-gray-50"
                 }`}
@@ -104,8 +113,8 @@ export default function Navbar() {
                 <span>
                   {link.country} {link.flag}
                 </span>
-                <span className="text-sm text-gray-500">:{link.port}</span>
-              </a>
+                <span className="text-sm text-gray-500">{link.subdomain}.localhost</span>
+              </Link>
             ))}
           </div>
         </div>
@@ -113,4 +122,3 @@ export default function Navbar() {
     </div>
   )
 }
-

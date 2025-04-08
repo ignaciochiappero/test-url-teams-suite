@@ -1,3 +1,5 @@
+//src\app\contact\page.tsx
+
 import Navbar from "@/components/navbar"
 
 export default function Contact() {
